@@ -93,16 +93,42 @@ def rule_to_conditions(rule: str):
 
 
     def _checker(values: pd.DataFrame, cons: list = cons) -> bool:
+        is_ok = []
         for var_name, op, val in cons:
-            print(var_name, op, val)
-            pass
-        pass
+            val = float(val)
+            match op:
+                case ">":
+                    tmp = values[var_name] > val
+                case ">=":
+                    tmp = values[var_name] >= val
+                case "==":
+                    tmp = values[var_name] == val
+                case "!=":
+                    tmp = values[var_name] != val
+                case "<":
+                    tmp = values[var_name] < val
+                case "<=":
+                    tmp = values[var_name] <= val
+                case _:
+                    raise ValueError(f"Operator {op} not supported.")
+
+            is_ok.append(tmp)
+
+        return all(is_ok)
 
     return _checker
 
+def index_rules(rules: dict) -> dict:
+    indexed_rules = {}
+    for i, rule in enumerate(rules.items()):
+        indexed_rules[i] = rule
+
+    return indexed_rules
+
+
 if __name__ == "__main__":
     from xaimoo.utilities.data import label_vehicle_crash
-    df_crash, var_names, obj_names = label_vehicle_crash("../../data/VehicleCrash.csv")
+    df_crash, var_names, obj_names = label_vehicle_crash("./data/VehicleCrash.csv")
     """
     kw_args = {"max_depth": range(1, len(var_names)+1), "precision_min": 0.7, "recall_min": 0.7}
 
@@ -112,12 +138,24 @@ if __name__ == "__main__":
 
     classifier = train_rulefit_rules(df_crash, var_names, 2)
     explain_rulefit_rules(classifier)
-    """
 
-    rule = "x3 <= 2.63713 and x4 <= 1.70858"
+    rule = "x3 <= 2.63713 and x4 <= 2.55"
+    rule2 = "x1 < 2"
 
     test_frame = pd.DataFrame({"x1": [1,2,3], "x2": [1,2,3], "x3": [1.5, 2.5, 3.0], "x4": [1.5, 2.5, 2.6]})
 
-    fun = rule_to_conditions(rule)
-    fun(test_frame)
+    funs = rule_to_conditions(rule)
+    funs2 = rule_to_conditions(rule2)
+    test_frame["rule"] = test_frame.apply(lambda row: funs(row) & funs2(row), axis=1)
+    print(rule)
+    print(rule2)
+    print(test_frame)
+    """
+
+    kw_args = {"max_depth": range(1, len(var_names)+1), "precision_min": 0.7, "recall_min": 0.7}
+
+    classifier = train_skope_rules(df_crash, var_names, 1, classifier_kwargs=kw_args)
+
+    res = explain_skope_rules(classifier)
     
+    print(index_rules(res))

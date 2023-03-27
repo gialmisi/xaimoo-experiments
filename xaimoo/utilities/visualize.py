@@ -4,7 +4,7 @@ from scipy.spatial import ConvexHull
 import matplotlib.pyplot as plt
 import itertools
 
-def plot_rule_explanations(df: pd.DataFrame, objective_names: list[str], rule_check_column: str, true_check_colum: str, truth_value: int):
+def plot_rule_explanations(df: pd.DataFrame, objective_names: list[str], rule_check_column: str, true_check_colum: str, truth_value: int, title: str = ""):
     rule_group = df[df[rule_check_column] == True]
     no_rule_group = df[df[rule_check_column] == False]
     true_group = df[df[true_check_colum] == truth_value]
@@ -30,5 +30,7 @@ def plot_rule_explanations(df: pd.DataFrame, objective_names: list[str], rule_ch
         axs[i].set_xlabel(pair[0])
         axs[i].set_ylabel(pair[1])
         axs[i].legend()
+
+    plt.suptitle(title)
 
     plt.show()
