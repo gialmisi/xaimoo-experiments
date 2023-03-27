@@ -76,7 +76,7 @@ def label_vehicle_crash(file_path: str, delimiter: str = ';'):
 
     df_labeled_clean = df_labeled[~df_labeled["category"].isnull()]
 
-    return df_labeled_clean
+    return df_labeled_clean, variable_names, objective_names
 
 
 def label_welded_beam(file_path: str, delimiter: str = ';'):
