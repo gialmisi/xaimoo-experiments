@@ -1,5 +1,6 @@
 import numpy as np 
 import pandas as pd
+import re
 from imodels import SkopeRulesClassifier, RuleFitClassifier, BayesianRuleSetClassifier
 
 def train_skope_rules(labeled_df: pd.DataFrame, variable_names: list[str], target_cetegory: int, target_column: str = "category", classifier_kwargs: dict | None = None) -> SkopeRulesClassifier:
@@ -81,6 +82,24 @@ def train_bayesian_rules(labeled_df: pd.DataFrame, variable_names: list[str], ta
 
     return classifier
 
+
+def rule_to_conditions(rule: str):
+    conditions = rule.split(" and ")
+    cons = []  
+
+    for condition in conditions:
+        variable, operator, value = re.match(r'(x\d+)\s*(<=|<|>=|>|==|!=)\s*([\d.]+)', condition).groups()
+        cons.append((variable, operator, value))
+
+
+    def _checker(values: pd.DataFrame, cons: list = cons) -> bool:
+        for var_name, op, val in cons:
+            print(var_name, op, val)
+            pass
+        pass
+
+    return _checker
+
 if __name__ == "__main__":
     from xaimoo.utilities.data import label_vehicle_crash
     df_crash, var_names, obj_names = label_vehicle_crash("../../data/VehicleCrash.csv")
@@ -90,8 +109,15 @@ if __name__ == "__main__":
     classifier = train_skope_rules(df_crash, var_names, 1, classifier_kwargs=kw_args)
 
     res = explain_skope_rules(classifier)
-    """
 
     classifier = train_rulefit_rules(df_crash, var_names, 2)
     explain_rulefit_rules(classifier)
+    """
+
+    rule = "x3 <= 2.63713 and x4 <= 1.70858"
+
+    test_frame = pd.DataFrame({"x1": [1,2,3], "x2": [1,2,3], "x3": [1.5, 2.5, 3.0], "x4": [1.5, 2.5, 2.6]})
+
+    fun = rule_to_conditions(rule)
+    fun(test_frame)
     
