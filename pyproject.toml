@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "xaimoo-experiments"
+name = "xaimoo"
 version = "0.1.0"
 description = ""
 authors = ["Giovanni Misitano <giovanni.a.misitano@jyu.fi>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "xaimoo_experiments"}]
+packages = [{include = "xaimoo"}]
 
 [tool.poetry.dependencies]
 python = "^3.9, <3.11"
