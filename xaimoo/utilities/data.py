@@ -32,9 +32,9 @@ def label_two_bar_truss(file_path: str, delimiter: str = ';'):
     df_labeled.loc[c3_mask, "category"] = 3
     df_labeled.loc[c4_mask, "category"] = 4
 
-    df_labeled_clean = df_labeled[~df_labeled["category"].isnull()]
+    df_labeled["category"].fillna(-1, inplace=True)
 
-    return df_labeled_clean
+    return df_labeled, variable_names, objective_names
 
 
 def label_vehicle_crash(file_path: str, delimiter: str = ';'):
@@ -74,9 +74,9 @@ def label_vehicle_crash(file_path: str, delimiter: str = ';'):
     df_labeled.loc[c4_mask, "category"] = 4
     df_labeled.loc[c5_mask, "category"] = 5
 
-    df_labeled_clean = df_labeled[~df_labeled["category"].isnull()]
+    df_labeled["category"].fillna(-1, inplace=True)
 
-    return df_labeled_clean, variable_names, objective_names
+    return df_labeled, variable_names, objective_names
 
 
 def label_welded_beam(file_path: str, delimiter: str = ';'):
@@ -110,13 +110,15 @@ def label_welded_beam(file_path: str, delimiter: str = ';'):
     df_labeled.loc[c3_mask, "category"] = 3
     df_labeled.loc[c4_mask, "category"] = 4
 
-    df_labeled_clean = df_labeled[~df_labeled["category"].isnull()]
+    # df_labeled_clean = df_labeled[~df_labeled["category"].isnull()]
 
-    return df_labeled_clean
+    df_labeled["category"].fillna(-1, inplace=True)
+
+    return df_labeled, variable_names, objective_names
 
 
 if __name__ == "__main__":
-    #res = label_two_bar_truss("../data/TwoBarTruss.csv")
+    res = label_two_bar_truss("./data/TwoBarTruss.csv")
     #res = label_vehicle_crash("../data/VehicleCrash.csv")
-    res = label_welded_beam("../data/WeldedBeam.csv")
+    #res = label_welded_beam("../data/WeldedBeam.csv")
     res = print(res)

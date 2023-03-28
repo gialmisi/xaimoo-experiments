@@ -28,8 +28,8 @@ def explain_skope_rules(classifier: SkopeRulesClassifier) -> dict:
     rules = dict(sorted(rules.items(), key=lambda item: item[1][0], reverse=True))
     
     print("Rule --> (Accuracy, Recall)")
-    for rule in rules:
-        print(f"{rule} --> {rules[rule]}")
+    for i, rule in enumerate(rules):
+        print(f"{i}: {rule} --> {rules[rule]}")
 
     return rules
 
@@ -61,8 +61,8 @@ def explain_rulefit_rules(classifier: RuleFitClassifier) -> dict:
     rules = dict(sorted(rules.items(), key=lambda item: item[1][0], reverse=True))
 
     print("Rule --> (Support, Importance)")
-    for rule in rules:
-        print(f"{rule} --> {rules[rule]}")
+    for i, rule in enumerate(rules):
+        print(f"{i}: {rule} --> {rules[rule]}")
 
     return rules
 
