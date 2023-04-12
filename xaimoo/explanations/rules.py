@@ -151,9 +151,63 @@ def index_rules(rules: dict) -> dict:
     return indexed_rules
 
 
+def simplify_rules(rules: list[str]) -> str:
+    var_rules = {}
+
+    for rule in rules:
+        cons = rule_to_condition_list(rule)
+
+        for var, op, val in cons:
+            if not var in var_rules:
+                # no rule for var
+                var_rules[var] = {op: val}
+            else:
+                if not op in var_rules[var]:
+                    # no rule for var with op
+                    var_rules[var][op] = val
+                else:
+                    # rule exists for var with op, check for redundancy
+                    match op:
+                        case ">":
+                            if val > var_rules[var][op]:
+                                var_rules[var][op] = val
+                        case ">=":
+                            if val >= var_rules[var][op]:
+                                var_rules[var][op] = val
+                        case "==":
+                            pass
+                        case "!=":
+                            pass
+                        case "<":
+                            if val < var_rules[var][op]:
+                                var_rules[var][op] = val
+                        case "<=":
+                            if val <= var_rules[var][op]:
+                                var_rules[var][op] = val
+                        case _:
+                            raise ValueError(f"Operator {op} not supported.")
+
+    simple_rules = []
+
+    for var_name in var_rules:
+        simple_rule = []
+        if ">" in var_rules[var_name]:
+            simple_rule.append(f"{var_name} > {var_rules[var_name]['>']}")
+        if ">=" in var_rules[var_name]:
+            simple_rule.append(f"{var_name} >= {var_rules[var_name]['>=']}")
+        if "<" in var_rules[var_name]:
+            simple_rule.append(f"{var_name} < {var_rules[var_name]['<']}")
+        if "<=" in var_rules[var_name]:
+            simple_rule.append(f"{var_name} <= {var_rules[var_name]['<=']}")
+
+        simple_rules.append(" & ".join(simple_rule))
+
+    return " AND ".join(simple_rules)
+
 if __name__ == "__main__":
     from xaimoo.utilities.data import label_vehicle_crash
 
+    """
     df_crash, var_names, obj_names = label_vehicle_crash("./data/VehicleCrash.csv")
     kw_args = {"max_depth": range(1, len(var_names)+1), "precision_min": 0.7, "recall_min": 0.7}
 
@@ -176,7 +230,7 @@ if __name__ == "__main__":
     print(" AND ".join(rules))
     print(test_frame)
 
-    """
+
     kw_args = {"max_depth": range(1, len(var_names)+1), "precision_min": 0.7, "recall_min": 0.5}
 
     classifier = train_skope_rules(df_crash, var_names, 1, classifier_kwargs=kw_args)
@@ -186,3 +240,7 @@ if __name__ == "__main__":
     print(res)
     print(index_rules(res))
     """
+
+    rules = ["x1 < 0.8 and x3 > 0.2", "x1 < 0.5 and x3 > 0.1", "x2 < 0.5", "x1 > 0.2"]
+
+    print(simplify_rules(rules))
