@@ -83,7 +83,7 @@ def train_bayesian_rules(labeled_df: pd.DataFrame, variable_names: list[str], ta
     return classifier
 
 
-def rule_to_conditions(rule: str):
+def rule_to_condition_list(rule: str) -> list:
     conditions = rule.split(" and ")
     cons = []  
 
@@ -91,6 +91,12 @@ def rule_to_conditions(rule: str):
         variable, operator, value = re.match(r'(x\d+)\s*(<=|<|>=|>|==|!=)\s*([\d.]+)', condition).groups()
         cons.append((variable, operator, value))
 
+    return cons
+
+
+def rule_to_conditions(rule: str):
+
+    cons = rule_to_condition_list(rule)
 
     def _checker(values: pd.DataFrame, cons: list = cons) -> bool:
         is_ok = []
@@ -118,6 +124,25 @@ def rule_to_conditions(rule: str):
 
     return _checker
 
+def combine_rule_conditions(rules: list[str]):
+    checkers = []
+
+    for rule in rules:
+        checker = rule_to_conditions(rule)
+        checkers.append(checker)
+
+    def _callable(values: pd.DataFrame, checkers=checkers):
+        for _checker in checkers:
+            res = _checker(values)
+            if not res:
+                return False
+
+        # if all checkers pass, return True
+        return True
+
+    return _callable
+
+
 def index_rules(rules: dict) -> dict:
     indexed_rules = {}
     for i, rule in enumerate(rules.items()):
@@ -128,16 +153,14 @@ def index_rules(rules: dict) -> dict:
 
 if __name__ == "__main__":
     from xaimoo.utilities.data import label_vehicle_crash
+
     df_crash, var_names, obj_names = label_vehicle_crash("./data/VehicleCrash.csv")
-    """
     kw_args = {"max_depth": range(1, len(var_names)+1), "precision_min": 0.7, "recall_min": 0.7}
 
-    classifier = train_skope_rules(df_crash, var_names, 1, classifier_kwargs=kw_args)
+    
+    # classifier = train_skope_rules(df_crash, var_names, 1, classifier_kwargs=kw_args)
 
-    res = explain_skope_rules(classifier)
-
-    classifier = train_rulefit_rules(df_crash, var_names, 2)
-    explain_rulefit_rules(classifier)
+    # res = explain_skope_rules(classifier)
 
     rule = "x3 <= 2.63713 and x4 <= 2.55"
     rule2 = "x1 < 2"
@@ -146,16 +169,20 @@ if __name__ == "__main__":
 
     funs = rule_to_conditions(rule)
     funs2 = rule_to_conditions(rule2)
-    test_frame["rule"] = test_frame.apply(lambda row: funs(row) & funs2(row), axis=1)
-    print(rule)
-    print(rule2)
+    rules = [rule, rule2]
+    funs_comb = combine_rule_conditions(rules)
+    # test_frame["rule"] = test_frame.apply(lambda row: funs(row) & funs2(row), axis=1)
+    test_frame["rule"] = test_frame.apply(lambda row: funs_comb(row), axis=1)
+    print(" AND ".join(rules))
     print(test_frame)
-    """
 
-    kw_args = {"max_depth": range(1, len(var_names)+1), "precision_min": 0.7, "recall_min": 0.7}
+    """
+    kw_args = {"max_depth": range(1, len(var_names)+1), "precision_min": 0.7, "recall_min": 0.5}
 
     classifier = train_skope_rules(df_crash, var_names, 1, classifier_kwargs=kw_args)
 
     res = explain_skope_rules(classifier)
     
+    print(res)
     print(index_rules(res))
+    """
