@@ -22,14 +22,16 @@ def train_skope_rules(labeled_df: pd.DataFrame, variable_names: list[str], targe
 def explain_skope_rules(classifier: SkopeRulesClassifier) -> dict:
     rules = {}
     for rule in classifier.rules_:
-        rules[f"{rule}"] = (rule.args[0], rule.args[1])
+        # args[0] == precisoin (accuracy), args[1] == recall
+        f1_score = 2 * (rule.args[0] * rule.args[1]) / (rule.args[0] + rule.args[1])
+        rules[f"{rule}"] = (rule.args[0], rule.args[1], f1_score)
 
-    # sort according to accuracy
-    rules = dict(sorted(rules.items(), key=lambda item: item[1][0], reverse=True))
+    # sort according to f1_score
+    rules = dict(sorted(rules.items(), key=lambda item: item[1][2], reverse=True))
     
-    print("Rule --> (Accuracy, Recall)")
+    print("Rule --> (Accuracy, Recall, F1-score)")
     for i, rule in enumerate(rules):
-        print(f"{i}: {rule} --> {rules[rule]}")
+        print(f"{i}: {rule} --> {tuple(f'{e:.3f}' for e in rules[rule])}")
 
     return rules
 
