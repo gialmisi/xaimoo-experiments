@@ -1,12 +1,21 @@
-import numpy as np 
+import numpy as np
 import pandas as pd
 import re
 from imodels import SkopeRulesClassifier, RuleFitClassifier, BayesianRuleSetClassifier
 
-def train_skope_rules(labeled_df: pd.DataFrame, variable_names: list[str], target_cetegory: int, target_column: str = "category", classifier_kwargs: dict | None = None) -> SkopeRulesClassifier:
+
+def train_skope_rules(
+    labeled_df: pd.DataFrame,
+    variable_names: list[str],
+    target_cetegory: int,
+    target_column: str = "category",
+    classifier_kwargs: dict | None = None,
+) -> SkopeRulesClassifier:
     df_copy = labeled_df.copy()
 
-    df_copy["category"] = df_copy["category"].apply(lambda x: 1 if int(x) == target_cetegory else 0)
+    df_copy["category"] = df_copy["category"].apply(
+        lambda x: 1 if int(x) == target_cetegory else 0
+    )
     x_train = df_copy[variable_names]
     y_target = df_copy["category"]
 
@@ -19,26 +28,36 @@ def train_skope_rules(labeled_df: pd.DataFrame, variable_names: list[str], targe
 
     return classifier
 
+
 def explain_skope_rules(classifier: SkopeRulesClassifier) -> dict:
     rules = {}
     for rule in classifier.rules_:
-        # args[0] == precisoin (accuracy), args[1] == recall
+        # args[0] == precision, args[1] == recall
         f1_score = 2 * (rule.args[0] * rule.args[1]) / (rule.args[0] + rule.args[1])
         rules[f"{rule}"] = (rule.args[0], rule.args[1], f1_score)
 
     # sort according to f1_score
     rules = dict(sorted(rules.items(), key=lambda item: item[1][2], reverse=True))
-    
+
     print("Rule --> (Accuracy, Recall, F1-score)")
     for i, rule in enumerate(rules):
         print(f"{i}: {rule} --> {tuple(f'{e:.3f}' for e in rules[rule])}")
 
     return rules
 
-def train_rulefit_rules(labeled_df: pd.DataFrame, variable_names: list[str], target_cetegory: int, target_column: str = "category", classifier_kwargs: dict | None = None) -> SkopeRulesClassifier:
+
+def train_rulefit_rules(
+    labeled_df: pd.DataFrame,
+    variable_names: list[str],
+    target_cetegory: int,
+    target_column: str = "category",
+    classifier_kwargs: dict | None = None,
+) -> SkopeRulesClassifier:
     df_copy = labeled_df.copy()
 
-    df_copy["category"] = df_copy["category"].apply(lambda x: 1 if int(x) == target_cetegory else 0)
+    df_copy["category"] = df_copy["category"].apply(
+        lambda x: 1 if int(x) == target_cetegory else 0
+    )
     x_train = df_copy[variable_names]
     y_target = df_copy["category"]
 
@@ -55,7 +74,12 @@ def train_rulefit_rules(labeled_df: pd.DataFrame, variable_names: list[str], tar
 def explain_rulefit_rules(classifier: RuleFitClassifier) -> dict:
     rules = {}
     classifier_rules = classifier._get_rules()
-    for rule, rule_type, support, importance in zip(classifier_rules["rule"], classifier_rules["type"], classifier_rules["support"], classifier_rules["importance"]):
+    for rule, rule_type, support, importance in zip(
+        classifier_rules["rule"],
+        classifier_rules["type"],
+        classifier_rules["support"],
+        classifier_rules["importance"],
+    ):
         if rule_type == "rule":
             rules[f"{rule}"] = (support, importance)
 
@@ -68,10 +92,19 @@ def explain_rulefit_rules(classifier: RuleFitClassifier) -> dict:
 
     return rules
 
-def train_bayesian_rules(labeled_df: pd.DataFrame, variable_names: list[str], target_cetegory: int, target_column: str = "category", classifier_kwargs: dict | None = None) -> BayesianRuleSetClassifier:
+
+def train_bayesian_rules(
+    labeled_df: pd.DataFrame,
+    variable_names: list[str],
+    target_cetegory: int,
+    target_column: str = "category",
+    classifier_kwargs: dict | None = None,
+) -> BayesianRuleSetClassifier:
     df_copy = labeled_df.copy()
 
-    df_copy["category"] = df_copy["category"].apply(lambda x: 1 if int(x) == target_cetegory else 0)
+    df_copy["category"] = df_copy["category"].apply(
+        lambda x: 1 if int(x) == target_cetegory else 0
+    )
     x_train = df_copy[variable_names]
     y_target = df_copy["category"]
 
@@ -87,17 +120,18 @@ def train_bayesian_rules(labeled_df: pd.DataFrame, variable_names: list[str], ta
 
 def rule_to_condition_list(rule: str) -> list:
     conditions = rule.split(" and ")
-    cons = []  
+    cons = []
 
     for condition in conditions:
-        variable, operator, value = re.match(r'(x\d+)\s*(<=|<|>=|>|==|!=)\s*([\d.]+)', condition).groups()
+        variable, operator, value = re.match(
+            r"(x\d+)\s*(<=|<|>=|>|==|!=)\s*([\d.]+)", condition
+        ).groups()
         cons.append((variable, operator, value))
 
     return cons
 
 
 def rule_to_conditions(rule: str):
-
     cons = rule_to_condition_list(rule)
 
     def _checker(values: pd.DataFrame, cons: list = cons) -> bool:
@@ -125,6 +159,7 @@ def rule_to_conditions(rule: str):
         return all(is_ok)
 
     return _checker
+
 
 def combine_rule_conditions(rules: list[str]):
     checkers = []
@@ -205,6 +240,7 @@ def simplify_rules(rules: list[str]) -> str:
         simple_rules.append(" & ".join(simple_rule))
 
     return " AND ".join(simple_rules)
+
 
 if __name__ == "__main__":
     from xaimoo.utilities.data import label_vehicle_crash
