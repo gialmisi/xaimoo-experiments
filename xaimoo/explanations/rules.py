@@ -123,9 +123,12 @@ def rule_to_condition_list(rule: str) -> list:
     cons = []
 
     for condition in conditions:
-        variable, operator, value = re.match(
-            r"(x\d+)\s*(<=|<|>=|>|==|!=)\s*([\d.]+)", condition
+        # Variable names assumed to be either of type x or y optionally followed by numbers, i.e., "x1" or y"
+        # throw away the index in '_', already included in 'variable'
+        variable, _, operator, value = re.match(
+            r"((x|y)\d*)\s*(<=|<|>=|>|==|!=)\s*([\d.]+)", condition
         ).groups()
+
         cons.append((variable, operator, value))
 
     return cons
