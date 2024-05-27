@@ -53,9 +53,9 @@ def plot_rule_explanations(
         axs[i].scatter(
             no_rule_group[pair[0]],
             no_rule_group[pair[1]],
-            c="orange",
+            c="#a6cee3",
             s=1,
-            alpha=0.5,
+            alpha=1.0,
             label="False",
         )
         # axs[i].scatter(false_neg_group[pair[0]], false_neg_group[pair[1]], c="blue", s=5, marker="v", alpha=0.3, label="False neg")
@@ -63,22 +63,22 @@ def plot_rule_explanations(
         axs[i].scatter(
             rule_group[pair[0]],
             rule_group[pair[1]],
-            c="blue",
+            c="#b2df8a",
             s=1,
-            alpha=0.5,
+            alpha=1.0,
             label="True",
         )
 
         points = true_group[[pair[0], pair[1]]].to_numpy()
         hull = ConvexHull(points)
         for simplex in hull.simplices:
-            axs[i].plot(points[simplex, 0], points[simplex, 1], "-", c="black")
+            axs[i].plot(points[simplex, 0], points[simplex, 1], "-", c="#1f78b4")
 
         rule_points = rule_group[[pair[0], pair[1]]].to_numpy()
         rule_hull = ConvexHull(rule_points)
         for simplex in rule_hull.simplices:
             axs[i].plot(
-                rule_points[simplex, 0], rule_points[simplex, 1], "--", c="blue"
+                rule_points[simplex, 0], rule_points[simplex, 1], "--", c="#b2df8a"
             )
 
         axs[i].set_xlabel(pair[0])
@@ -86,5 +86,3 @@ def plot_rule_explanations(
         axs[i].legend()
 
     plt.suptitle(title)
-
-    plt.show()

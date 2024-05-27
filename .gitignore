@@ -3,4 +3,5 @@ data/BuildingDataset/*
 __pycache__
 data/*Labeled.csv
 .ipynb_checkpoints*
+*.pdf
 
